@@ -4,6 +4,7 @@ package tr.edu.boun.hrperformance.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -21,8 +22,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tr.edu.boun.hrperformance.R;
+import tr.edu.boun.hrperformance.adapters.HRGroupTasksAdapter;
 import tr.edu.boun.hrperformance.models.Employee;
 import tr.edu.boun.hrperformance.models.EmployeeTask;
+import tr.edu.boun.hrperformance.models.HRGroupTask;
 
 
 public class HRLeaderHomeFragment extends Fragment
@@ -57,6 +60,8 @@ public class HRLeaderHomeFragment extends Fragment
         {
             mUserID = getArguments().getString(ARG_PARAM1);
         }
+
+
     }
 
     @Override
@@ -65,16 +70,18 @@ public class HRLeaderHomeFragment extends Fragment
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_hrleader_home, container, false);
 
-        // Set the adapter
-        if(view instanceof RecyclerView)
-        {
-            context = view.getContext();
-            recyclerView = (RecyclerView) view;
 
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        context = view.getContext();
+        recyclerView = (RecyclerView) view.findViewById(R.id.group_list);
 
-            PopulateHRGroupTasks();
-        }
+        LinearLayoutManager llm = new LinearLayoutManager(context);
+        recyclerView.setLayoutManager(llm);
+
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), llm.getOrientation());
+        recyclerView.addItemDecoration(dividerItemDecoration);
+
+        PopulateHRGroupTasks();
+
 
         return view;
     }
@@ -108,7 +115,13 @@ public class HRLeaderHomeFragment extends Fragment
 //                        myTask_list.add(task);
 //                }
 //
-//                recyclerView.setAdapter(new EmployeeTasksAdapter(myTask_list));
+
+                List<HRGroupTask> myTask_list = new ArrayList<>();
+                myTask_list.add(new HRGroupTask("Blockchain research", "0 / 3"));
+                myTask_list.add(new HRGroupTask("Review Forms","4 / 7"));
+
+                recyclerView.setAdapter(new HRGroupTasksAdapter(myTask_list));
+
             }
 
             @Override

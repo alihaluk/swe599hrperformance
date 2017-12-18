@@ -4,6 +4,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 import com.google.firebase.database.DataSnapshot;
@@ -40,6 +41,7 @@ public class MainActivity extends AppCompatActivity
         TextView tv = findViewById(R.id.main_text);
 
         tv.setText("Wellcome " + userType + "!\n" + userId);
+        tv.setVisibility(View.GONE);
 
 //        mDatabase = FirebaseDatabase.getInstance();
 
@@ -51,6 +53,7 @@ public class MainActivity extends AppCompatActivity
         }
         else if (userType.equals("hrleader"))
         {
+            setTitle("Developers");
             FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             ft.add(R.id.fragment_container, HRLeaderHomeFragment.newInstance(userId), "HRGroup_Tasks")
                     .commit();

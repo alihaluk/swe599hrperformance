@@ -25,9 +25,9 @@
                 android:id="@+id/task_duetime"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textAlignment="viewEnd"
+                android:textAlignment="viewStart"
                 android:layout_margin="@dimen/text_margin"
-                android:textAppearance="?attr/textAppearanceListItem"/>
+                android:textAppearance="?attr/textAppearanceListItemSecondary"/>
 
         </LinearLayout>
 
@@ -56,9 +56,9 @@
                     android:id="@+id/task_begin_date"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="@dimen/text_margin"
+                    android:layout_margin="@dimen/button_margin"
                     android:textColor="@android:color/holo_green_dark"
-                    android:textAppearance="?attr/textAppearanceListItem"/>
+                    android:textAppearance="?attr/textAppearanceListItemSecondary"/>
 
             </LinearLayout>
 
@@ -81,8 +81,9 @@
                     android:id="@+id/task_finish_date"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="@dimen/text_margin"
-                    android:textAppearance="?attr/textAppearanceListItem"/>
+                    android:layout_margin="@dimen/button_margin"
+                    android:textColor="@android:color/holo_red_dark"
+                    android:textAppearance="?attr/textAppearanceListItemSecondary"/>
             </LinearLayout>
 
 

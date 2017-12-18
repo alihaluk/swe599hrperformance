@@ -4,6 +4,7 @@ package tr.edu.boun.hrperformance.fragments;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -70,7 +71,11 @@ public class EmployeeHomeFragment extends Fragment
             context = view.getContext();
             recyclerView = (RecyclerView) view;
 
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            LinearLayoutManager llm = new LinearLayoutManager(context);
+            recyclerView.setLayoutManager(llm);
+
+            DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), llm.getOrientation());
+            recyclerView.addItemDecoration(dividerItemDecoration);
 
             PopulateEmployeeTasks();
         }
@@ -98,6 +103,16 @@ public class EmployeeHomeFragment extends Fragment
 
                     if (task != null)
                         myTask_list.add(task);
+                }
+
+                if (myTask_list.size() <= 0)
+                {
+                    myTask_list.add(new EmployeeTask("1","Blockchain technology research", "", "", "", "20.12.2017"));
+                    myTask_list.get(0).startTime = "13.12.2017";
+                    myTask_list.add(new EmployeeTask("2","Watch the video about Firebase", "", "", "", "19.12.2017"));
+                    myTask_list.get(1).startTime = "09.12.2017";
+                    myTask_list.get(1).finishTime = "10.12.2017";
+                    myTask_list.add(new EmployeeTask("3","Fill review form", "", "", "", "27.12.2017"));
                 }
 
                 recyclerView.setAdapter(new EmployeeTasksAdapter(myTask_list));

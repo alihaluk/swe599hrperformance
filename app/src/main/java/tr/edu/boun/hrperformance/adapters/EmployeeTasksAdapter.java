@@ -40,7 +40,7 @@ public class EmployeeTasksAdapter extends RecyclerView.Adapter<EmployeeTasksAdap
         holder.mDuetime.setText(mValues.get(position).dueTime);
 
         String startDate = mValues.get(position).startTime;
-        if (!startDate.isEmpty())
+        if (startDate != null && !startDate.isEmpty())
         {
             holder.mStartDate.setText(mValues.get(position).startTime);
             holder.mStartButton.setEnabled(false);
@@ -57,7 +57,7 @@ public class EmployeeTasksAdapter extends RecyclerView.Adapter<EmployeeTasksAdap
         }
 
         String finishDate = mValues.get(position).finishTime;
-        if (!finishDate.isEmpty())
+        if (finishDate != null && !finishDate.isEmpty())
         {
             holder.mFinishDate.setText(mValues.get(position).finishTime);
             holder.mFinishButton.setEnabled(false);
