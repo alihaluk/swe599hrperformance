@@ -2,7 +2,10 @@ package tr.edu.boun.hrperformance.fragments;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
@@ -19,10 +22,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import tr.edu.boun.hrperformance.R;
 import tr.edu.boun.hrperformance.adapters.HRGroupTasksAdapter;
+import tr.edu.boun.hrperformance.controls.AddTaskActivity;
 import tr.edu.boun.hrperformance.models.Employee;
 import tr.edu.boun.hrperformance.models.EmployeeTask;
 import tr.edu.boun.hrperformance.models.HRGroupTask;
@@ -72,13 +78,23 @@ public class HRLeaderHomeFragment extends Fragment
 
 
         context = view.getContext();
-        recyclerView = (RecyclerView) view.findViewById(R.id.group_list);
+        recyclerView = (RecyclerView) view.findViewById(R.id.group_task_list);
 
         LinearLayoutManager llm = new LinearLayoutManager(context);
         recyclerView.setLayoutManager(llm);
 
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(recyclerView.getContext(), llm.getOrientation());
         recyclerView.addItemDecoration(dividerItemDecoration);
+
+        FloatingActionButton btn_newTask = view.findViewById(R.id.fab);
+        btn_newTask.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view)
+            {
+                Intent i = new Intent(context.getApplicationContext(), AddTaskActivity.class);
+                startActivity(i);
+            }
+        });
 
         PopulateHRGroupTasks();
 
@@ -94,33 +110,59 @@ public class HRLeaderHomeFragment extends Fragment
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-//                DataSnapshot allEmployeesSnapshot = dataSnapshot.child("employees");
-//                DataSnapshot employeeTasksSnapshot = dataSnapshot.child("tasks");
-//
-//                Iterable<DataSnapshot> allTasks = employeeTasksSnapshot.getChildren();
-//
-//                List<EmployeeTask> myTask_list = new ArrayList<>();
-//                for (DataSnapshot e : allTasks)
-//                {
-//                    EmployeeTask task = e.getValue(EmployeeTask.class);
-//
-//                    if (task != null && task.assigner.equals(mUserID))
-//                    {
-//                        DataSnapshot employeeSnapshot = allEmployeesSnapshot.child(task.employee);
-//                        Employee employee = employeeSnapshot.getValue(Employee.class);
-//
-//                        if (employee.groups.containsKey(mUserID))
-//
-//                    }
-//                        myTask_list.add(task);
-//                }
-//
+                DataSnapshot employeeTasksSnapshot = dataSnapshot.child("employee-tasks");
 
-                List<HRGroupTask> myTask_list = new ArrayList<>();
-                myTask_list.add(new HRGroupTask("Blockchain research", "0 / 3"));
-                myTask_list.add(new HRGroupTask("Review Forms","4 / 7"));
+                Iterable<DataSnapshot> allTasks = employeeTasksSnapshot.getChildren();
 
-                recyclerView.setAdapter(new HRGroupTasksAdapter(myTask_list));
+                List<EmployeeTask> myTask_list = new ArrayList<>();
+                for (DataSnapshot e : allTasks)
+                {
+                    for (DataSnapshot t : e.getChildren())
+                    {
+                        EmployeeTask task = t.getValue(EmployeeTask.class);
+
+                        if (task != null && task.assigner.equals(mUserID))
+                        {
+                            myTask_list.add(task);
+                        }
+                    }
+                }
+
+
+                List<HRGroupTask> groupTask_list = new ArrayList<>();
+                Map<String, Integer> taskMap = new HashMap<>();
+                Map<String, Integer> taskDoneMap = new HashMap<>();
+                for (EmployeeTask et : myTask_list)
+                {
+                    if (!taskMap.containsKey(et.title))
+                    {
+                        taskMap.put(et.title, 1);
+                        if (et.finishTime != null)
+                        {
+                            taskDoneMap.put(et.title, 1);
+                        }
+                    }
+                    else
+                    {
+                        int count = taskMap.get(et.title);
+                        taskMap.put(et.title, count+1);
+
+                        if (et.finishTime != null)
+                        {
+                            int doneCount = taskDoneMap.get(et.title);
+                            taskDoneMap.put(et.title, doneCount+1);
+                        }
+                    }
+                }
+
+                for (Map.Entry<String, Integer> entry : taskMap.entrySet())
+                {
+                    groupTask_list.add(new HRGroupTask(entry.getKey(),
+                            (taskDoneMap.get(entry.getKey()) == null ? "0" : taskDoneMap.get(entry.getKey()).toString())
+                                    + " / " + entry.getValue().toString()));
+                }
+
+                recyclerView.setAdapter(new HRGroupTasksAdapter(groupTask_list));
 
             }
 

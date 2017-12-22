@@ -45,6 +45,7 @@ public class EmployeeTask
         result.put("assigner", assigner);
         result.put("employee", employee);
         result.put("body", body);
+        result.put("dueTime", dueTime);
 
         return result;
     }

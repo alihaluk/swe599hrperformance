@@ -7,7 +7,14 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import tr.edu.boun.hrperformance.R;
 import tr.edu.boun.hrperformance.models.EmployeeTask;
@@ -33,7 +40,7 @@ public class EmployeeTasksAdapter extends RecyclerView.Adapter<EmployeeTasksAdap
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position)
+    public void onBindViewHolder(final ViewHolder holder, int position)
     {
         holder.mItem = mValues.get(position);
         holder.mTitle.setText(mValues.get(position).title);
@@ -52,6 +59,8 @@ public class EmployeeTasksAdapter extends RecyclerView.Adapter<EmployeeTasksAdap
                 public void onClick(View view)
                 {
                     // start task
+                    DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("employee-tasks");
+                    myRef.child(holder.mItem.employee).child(holder.mItem.uid).child("startTime").setValue(getNow());
                 }
             });
         }
@@ -69,6 +78,8 @@ public class EmployeeTasksAdapter extends RecyclerView.Adapter<EmployeeTasksAdap
                 public void onClick(View view)
                 {
                     // finish task
+                    DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("employee-tasks");
+                    myRef.child(holder.mItem.employee).child(holder.mItem.uid).child("finishTime").setValue(getNow());
                 }
             });
         }
@@ -118,5 +129,12 @@ public class EmployeeTasksAdapter extends RecyclerView.Adapter<EmployeeTasksAdap
         {
             return super.toString() + " '" + mTitle.getText() + "'";
         }
+    }
+
+    public String getNow()
+    {
+        java.text.DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.GERMAN);
+        Date cal = Calendar.getInstance().getTime();
+        return dateFormat.format(cal);
     }
 }

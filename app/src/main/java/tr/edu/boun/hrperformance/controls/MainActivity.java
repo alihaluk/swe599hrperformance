@@ -1,25 +1,22 @@
 package tr.edu.boun.hrperformance.controls;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import tr.edu.boun.hrperformance.R;
+import tr.edu.boun.hrperformance.fragments.EmployeeListFragment;
 import tr.edu.boun.hrperformance.fragments.EmployeeHomeFragment;
 import tr.edu.boun.hrperformance.fragments.HRLeaderHomeFragment;
-import tr.edu.boun.hrperformance.models.EmployeeTask;
+import tr.edu.boun.hrperformance.fragments.ProfileFragment;
 
 public class MainActivity extends AppCompatActivity
 {
@@ -28,6 +25,50 @@ public class MainActivity extends AppCompatActivity
 
     private String userType;
     private String userId;
+
+    private BottomNavigationView navigation;
+
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener = new BottomNavigationView.OnNavigationItemSelectedListener()
+    {
+
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item)
+        {
+
+            switch(item.getItemId())
+            {
+                case R.id.nav_home:
+                    if (userType.equals("employee"))
+                    {
+                        replaceFragment(EmployeeHomeFragment.newInstance(userId),"Home");
+                    }
+                    else if (userType.equals("hrleader"))
+                    {
+                        replaceFragment(HRLeaderHomeFragment.newInstance(userId),"Home");
+                    }
+                    return true;
+                case R.id.nav_groups:
+//                    replaceFragment(ExploreFragment.newInstance(),"Explore");
+                    return true;
+                case R.id.nav_employees:
+                    replaceFragment(EmployeeListFragment.newInstance(),"Employees");
+                    return true;
+                case R.id.nav_profile:
+                    replaceFragment(ProfileFragment.newInstance(""),"Profile");
+                    return true;
+            }
+
+            return false;
+        }
+
+    };
+
+    private void replaceFragment(Fragment newFragment, String tag) {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_container, newFragment, tag)
+                .commit();
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -38,26 +79,31 @@ public class MainActivity extends AppCompatActivity
         userType = getIntent().getStringExtra("userType");
         userId = getIntent().getStringExtra("userID");
 
+        navigation = findViewById(R.id.navigation);
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+
         TextView tv = findViewById(R.id.main_text);
 
         tv.setText("Wellcome " + userType + "!\n" + userId);
         tv.setVisibility(View.GONE);
 
-//        mDatabase = FirebaseDatabase.getInstance();
+        SharedPreferences prefs = getApplicationContext().getSharedPreferences("user_info",Context.MODE_PRIVATE);
+        SharedPreferences.Editor edit = prefs.edit();
+        edit.putString("userID", userId);
+        edit.putString("userType", userType);
+        edit.commit();
 
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         if (userType.equals("employee"))
         {
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.add(R.id.fragment_container, EmployeeHomeFragment.newInstance(userId), "Employee_Tasks")
-                    .commit();
+            ft.add(R.id.fragment_container, EmployeeHomeFragment.newInstance(userId), "Home").commit();
         }
         else if (userType.equals("hrleader"))
         {
-            setTitle("Developers");
-            FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.add(R.id.fragment_container, HRLeaderHomeFragment.newInstance(userId), "HRGroup_Tasks")
-                    .commit();
+            ft.add(R.id.fragment_container, HRLeaderHomeFragment.newInstance(userId), "Home").commit();
         }
+
+//        mDatabase = FirebaseDatabase.getInstance();
 
         // Write a message to the database
 //        FirebaseDatabase database = FirebaseDatabase.getInstance();

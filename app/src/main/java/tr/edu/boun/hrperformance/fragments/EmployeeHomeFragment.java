@@ -91,7 +91,7 @@ public class EmployeeHomeFragment extends Fragment
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
-                DataSnapshot employeeTasksSnapshot = dataSnapshot.child("employee_tasks");
+                DataSnapshot employeeTasksSnapshot = dataSnapshot.child("employee-tasks");
                 DataSnapshot myTaskSnapshot = employeeTasksSnapshot.child(mUserID);
 
                 Iterable<DataSnapshot> myTasks = myTaskSnapshot.getChildren();
@@ -105,15 +105,15 @@ public class EmployeeHomeFragment extends Fragment
                         myTask_list.add(task);
                 }
 
-                if (myTask_list.size() <= 0)
-                {
-                    myTask_list.add(new EmployeeTask("1","Blockchain technology research", "", "", "", "20.12.2017"));
-                    myTask_list.get(0).startTime = "13.12.2017";
-                    myTask_list.add(new EmployeeTask("2","Watch the video about Firebase", "", "", "", "19.12.2017"));
-                    myTask_list.get(1).startTime = "09.12.2017";
-                    myTask_list.get(1).finishTime = "10.12.2017";
-                    myTask_list.add(new EmployeeTask("3","Fill review form", "", "", "", "27.12.2017"));
-                }
+//                if (myTask_list.size() <= 0)
+//                {
+//                    myTask_list.add(new EmployeeTask("1","Blockchain technology research", "", "", "", "20.12.2017"));
+//                    myTask_list.get(0).startTime = "13.12.2017";
+//                    myTask_list.add(new EmployeeTask("2","Watch the video about Firebase", "", "", "", "19.12.2017"));
+//                    myTask_list.get(1).startTime = "09.12.2017";
+//                    myTask_list.get(1).finishTime = "10.12.2017";
+//                    myTask_list.add(new EmployeeTask("3","Fill review form", "", "", "", "27.12.2017"));
+//                }
 
                 recyclerView.setAdapter(new EmployeeTasksAdapter(myTask_list));
             }
