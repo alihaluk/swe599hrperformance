@@ -1,14 +1,11 @@
 package tr.edu.boun.hrperformance.adapters;
 
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -26,10 +23,17 @@ import tr.edu.boun.hrperformance.models.EmployeeTask;
 public class EmployeeTasksAdapter extends RecyclerView.Adapter<EmployeeTasksAdapter.ViewHolder>
 {
     private final List<EmployeeTask> mValues;
+    private final OnTaskActionListener mListener;
 
-    public EmployeeTasksAdapter(List<EmployeeTask> items)
+    public interface OnTaskActionListener {
+        void onTaskStart(EmployeeTask task);
+        void onTaskFinish(EmployeeTask task);
+    }
+
+    public EmployeeTasksAdapter(List<EmployeeTask> items, OnTaskActionListener listener)
     {
         mValues = items;
+        mListener = listener;
     }
 
     @Override
@@ -58,9 +62,9 @@ public class EmployeeTasksAdapter extends RecyclerView.Adapter<EmployeeTasksAdap
                 @Override
                 public void onClick(View view)
                 {
-                    // start task
-                    DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("employee-tasks");
-                    myRef.child(holder.mItem.employee).child(holder.mItem.uid).child("startTime").setValue(getNow());
+                    if (mListener != null) {
+                        mListener.onTaskStart(holder.mItem);
+                    }
                 }
             });
         }
@@ -77,9 +81,9 @@ public class EmployeeTasksAdapter extends RecyclerView.Adapter<EmployeeTasksAdap
                 @Override
                 public void onClick(View view)
                 {
-                    // finish task
-                    DatabaseReference myRef = FirebaseDatabase.getInstance().getReference("employee-tasks");
-                    myRef.child(holder.mItem.employee).child(holder.mItem.uid).child("finishTime").setValue(getNow());
+                   if (mListener != null) {
+                        mListener.onTaskFinish(holder.mItem);
+                   }
                 }
             });
         }
@@ -129,12 +133,5 @@ public class EmployeeTasksAdapter extends RecyclerView.Adapter<EmployeeTasksAdap
         {
             return super.toString() + " '" + mTitle.getText() + "'";
         }
-    }
-
-    public String getNow()
-    {
-        java.text.DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.GERMAN);
-        Date cal = Calendar.getInstance().getTime();
-        return dateFormat.format(cal);
     }
 }

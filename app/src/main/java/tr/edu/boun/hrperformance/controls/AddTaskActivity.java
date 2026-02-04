@@ -4,10 +4,10 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -25,12 +25,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -121,50 +115,7 @@ public class AddTaskActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item)
     {
         if (item.getItemId() == R.id.menu_add_task_send) {
-            // send task
-            edt_title.setError(null);
-            edt_body.setError(null);
-
-            String title = edt_title.getText().toString();
-            String body = edt_body.getText().toString();
-
-            if (TextUtils.isEmpty(title))
-            {
-                edt_title.setError("Title is required!");
-                return false;
-            }
-            if (TextUtils.isEmpty(str_deadline))
-            {
-                Toast.makeText(AddTaskActivity.this, "Deadline is required!", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-            if (selectedEmployees.size() <= 0 && selectedHRGroup.isEmpty())
-            {
-                Toast.makeText(AddTaskActivity.this, "Task is not assigned!", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-
-            // create task and assign to selected employees
-            SharedPreferences prefs = getApplicationContext().getSharedPreferences("user_info",Context.MODE_PRIVATE);
-            String userID = prefs.getString("userID", "");
-
-            FirebaseDatabase database = FirebaseDatabase.getInstance();
-            DatabaseReference myRef = database.getReference();
-
-            String taskUid = myRef.child("tasks").push().getKey();
-            for (String employeeUid : selectedEmployees)
-            {
-                EmployeeTask task = new EmployeeTask(taskUid, title, userID, employeeUid, body, str_deadline);
-                Map<String, Object> taskValues = task.toMap();
-
-                Map<String, Object> childUpdates = new HashMap<>();
-                childUpdates.put("/tasks/" + taskUid, taskValues);
-                childUpdates.put("/employee-tasks/" + employeeUid + "/" + taskUid, taskValues);
-
-                myRef.updateChildren(childUpdates);
-            }
-
-            finish();
+            Toast.makeText(this, "Add Task Not Implemented in Beta", Toast.LENGTH_SHORT).show();
             return true;
         }
         return false;
@@ -172,67 +123,12 @@ public class AddTaskActivity extends AppCompatActivity
 
     public void populateEmployees()
     {
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("employees");
-
-        ValueEventListener employeeListener = new ValueEventListener() {
-
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot)
-            {
-                Iterable<DataSnapshot> employeeSnapshots = dataSnapshot.getChildren();
-
-                for (DataSnapshot emp : employeeSnapshots)
-                {
-                    Employee e = emp.getValue(Employee.class);
-                    employees.add(e);
-                    lvArray_employees.add(new rowLayout(e.uid, e.name, false));
-                }
-
-                MultiSelectSpinnerAdapter adapter = new MultiSelectSpinnerAdapter(AddTaskActivity.this, lvArray_employees);
-                spn_employees.setAdapter(adapter);
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError)
-            {
-                Log.w("firebase", "loadPost:onCancelled", databaseError.toException());
-            }
-        };
-
-        myRef.addListenerForSingleValueEvent(employeeListener);
+        // Mock data or empty
     }
 
     public void populateHRGroups()
     {
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("hr_groups");
-
-        ValueEventListener hrgroupListener = new ValueEventListener() {
-
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot)
-            {
-                Iterable<DataSnapshot> hr_groups = dataSnapshot.getChildren();
-
-                for (DataSnapshot hr : hr_groups)
-                {
-                    HRGroup g = hr.getValue(HRGroup.class);
-                    hrGroupList.add(g);
-                    lvArray_hrGroups.add(g.name);
-                }
-
-                spn_hrGroups.setAdapter(new ArrayAdapter<String>(AddTaskActivity.this, android.R.layout.simple_list_item_activated_1, android.R.id.text1, lvArray_hrGroups));
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError)
-            {
-                Log.w("firebase", "loadPost:onCancelled", databaseError.toException());
-            }
-        };
-
-        myRef.addListenerForSingleValueEvent(hrgroupListener);
+       // Mock data or empty
     }
 
     public static class MyDatePickerFragment extends DialogFragment implements android.app.DatePickerDialog.OnDateSetListener

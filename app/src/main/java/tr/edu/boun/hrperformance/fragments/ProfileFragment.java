@@ -6,8 +6,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,12 +17,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
-
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,11 +25,10 @@ import java.util.List;
 import java.util.Map;
 
 import tr.edu.boun.hrperformance.R;
-import tr.edu.boun.hrperformance.adapters.EmployeeTasksAdapter;
 import tr.edu.boun.hrperformance.models.Employee;
-import tr.edu.boun.hrperformance.models.EmployeeTask;
-import tr.edu.boun.hrperformance.models.HRGroup;
 import tr.edu.boun.hrperformance.models.HRLeader;
+import tr.edu.boun.hrperformance.services.DataProvider;
+import tr.edu.boun.hrperformance.services.MockDataProvider;
 
 
 public class ProfileFragment extends Fragment
@@ -95,175 +89,52 @@ public class ProfileFragment extends Fragment
             @Override
             public void onClick(View view)
             {
-                // add to group
-
-                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                DatabaseReference myRef = database.getReference("hr_groups");
-
-                ValueEventListener taskListener = new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-
-                        Iterable<DataSnapshot> groupSnaps = dataSnapshot.getChildren();
-
-                        List<String> groupList = new ArrayList<>();
-                        for (DataSnapshot ds : groupSnaps)
-                        {
-                            HRGroup g =  ds.getValue(HRGroup.class);
-                            groupList.add(g.name);
-                        }
-
-                        View view = getLayoutInflater().inflate(R.layout.dialog_hrgroup_selection, null);
-                        Spinner spn_hrgroups = (Spinner) view.findViewById(R.id.spinner_hrgroup_profile);
-                        ArrayAdapter<String> adapInfo = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, groupList);
-                        adapInfo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                        spn_hrgroups.setAdapter(adapInfo);
-                        spn_hrgroups.setSelection(0);
-                        spn_hrgroups.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
-                        {
-
-                            @Override
-                            public void onItemSelected(AdapterView<?> arg0, View arg1, int arg2, long arg3)
-                            {
-                                selectedHRGroupName = arg0.getItemAtPosition(arg2).toString();
-                            }
-
-                            @Override
-                            public void onNothingSelected(AdapterView<?> arg0)
-                            {
-
-                            }
-                        });
-                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                        builder.setTitle("Choose HR Group to add the Employee");
-                        builder.setView(view);
-                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener()
-                        {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id)
-                            {
-                                // save new group
-
-                                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                                DatabaseReference myRef = database.getReference();
-
-                                Map<String, Boolean> employeeGroups = new HashMap<>();
-                                employeeGroups.put(selectedHRGroupName, true);
-
-                                myRef.child("employees").child(requestedUserId).child("hr_groups").setValue(employeeGroups);
-                                
-                            }
-                        }).setNegativeButton("Cancel", new DialogInterface.OnClickListener()
-                        {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id)
-                            {
-
-                            }
-                        });
-                        AlertDialog dialog = builder.create();
-                        dialog.show();
-
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        // Getting Post failed, log a message
-                        Log.w("firebase", "loadPost:onCancelled", databaseError.toException());
-                        // ...
-                    }
-                };
-
-                myRef.addListenerForSingleValueEvent(taskListener);
+                Toast.makeText(context, "Add to group not implemented in Beta", Toast.LENGTH_SHORT).show();
             }
         });
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference();
-
         if (userType.equals("employee"))
         {
-            DatabaseReference employeeRef = myRef.child("employees").child(requestedUserId.isEmpty() ? userID : requestedUserId);
-
-            ValueEventListener taskListener = new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-
-                    Employee emp = dataSnapshot.getValue(Employee.class);
-                    tv_name.setText(emp.name);
-                    tv_email.setText(emp.email);
-                    tv_hrgroup.setText(emp.groups.toString());
-                    tv_user_type.setText("Employee");
-                    if (requestedUserId.isEmpty())
-                    {
-                        btn_add2group.setVisibility(View.GONE);
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    // Getting Post failed, log a message
-                    Log.w("firebase", "loadPost:onCancelled", databaseError.toException());
-                    // ...
-                }
-            };
-
-            employeeRef.addListenerForSingleValueEvent(taskListener);
+             MockDataProvider.getInstance().getEmployee(requestedUserId == null || requestedUserId.isEmpty() ? userID : requestedUserId, new DataProvider.DataCallback<Employee>() {
+                 @Override
+                 public void onSuccess(Employee emp) {
+                     tv_name.setText(emp.name);
+                     tv_email.setText(emp.email);
+                     tv_hrgroup.setText("Score: " + emp.score);
+                     tv_user_type.setText("Employee");
+                     if (requestedUserId == null || requestedUserId.isEmpty())
+                     {
+                         btn_add2group.setVisibility(View.GONE);
+                     }
+                 }
+                 @Override
+                 public void onError(Exception e) {}
+             });
 
         }
         else if (userType.equals("hrleader"))
         {
-            if (requestedUserId.isEmpty())
+            if (requestedUserId == null || requestedUserId.isEmpty())
             {
-                DatabaseReference hrleaderRef = myRef.child("hrleaders").child(userID);
-
-                ValueEventListener taskListener = new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-
-                        HRLeader hr = dataSnapshot.getValue(HRLeader.class);
-                        tv_name.setText(hr.name);
-                        tv_email.setText(hr.email);
-                        tv_user_type.setText(userType);
-                        tv_hrgroup.setVisibility(View.GONE);
-                        btn_add2group.setVisibility(View.GONE);
-
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        // Getting Post failed, log a message
-                        Log.w("firebase", "loadPost:onCancelled", databaseError.toException());
-                        // ...
-                    }
-                };
-
-                hrleaderRef.addListenerForSingleValueEvent(taskListener);
+                tv_name.setText("HR Leader");
+                tv_email.setText("hr@boun.edu.tr");
+                tv_user_type.setText(userType);
+                tv_hrgroup.setVisibility(View.GONE);
+                btn_add2group.setVisibility(View.GONE);
             }
             else
             {
-                DatabaseReference employeeRef = myRef.child("employees").child(requestedUserId);
-
-                ValueEventListener taskListener = new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-
-                        Employee emp = dataSnapshot.getValue(Employee.class);
-                        tv_name.setText(emp.name);
-                        tv_email.setText(emp.email);
-                        tv_hrgroup.setText(emp.groups.toString());
-                        tv_user_type.setText("Employee");
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        // Getting Post failed, log a message
-                        Log.w("firebase", "loadPost:onCancelled", databaseError.toException());
-                        // ...
-                    }
-                };
-
-                employeeRef.addListenerForSingleValueEvent(taskListener);
+                MockDataProvider.getInstance().getEmployee(requestedUserId, new DataProvider.DataCallback<Employee>() {
+                 @Override
+                 public void onSuccess(Employee emp) {
+                     tv_name.setText(emp.name);
+                     tv_email.setText(emp.email);
+                     tv_hrgroup.setText("Score: " + emp.score);
+                     tv_user_type.setText("Employee");
+                 }
+                 @Override
+                 public void onError(Exception e) {}
+             });
             }
 
         }

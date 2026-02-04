@@ -7,9 +7,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.appcompat.app.AppCompatActivity;
 import android.app.LoaderManager.LoaderCallbacks;
 
 import android.content.CursorLoader;
@@ -33,18 +33,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import tr.edu.boun.hrperformance.R;
-import tr.edu.boun.hrperformance.models.Employee;
-import tr.edu.boun.hrperformance.models.HRLeader;
+import tr.edu.boun.hrperformance.services.DataProvider;
+import tr.edu.boun.hrperformance.services.MockDataProvider;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -156,72 +150,25 @@ public class LoginActivity extends AppCompatActivity
 //            mAuthTask = new UserLoginTask(email, password);
 //            mAuthTask.execute((Void) null);
 
-            // firebase
-            FirebaseDatabase database = FirebaseDatabase.getInstance();
-            DatabaseReference myRef = database.getReference();
-
-            ValueEventListener userListener = new ValueEventListener() {
+            MockDataProvider.getInstance().login(email, password, new DataProvider.DataCallback<DataProvider.LoginResult>() {
                 @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-
-                    String userType = "";
-                    String userid = "";
-
-                    DataSnapshot employeeSnapshot = dataSnapshot.child("employees");
-                    Iterable<DataSnapshot> employees = employeeSnapshot.getChildren();
-
-                    for (DataSnapshot e : employees)
-                    {
-                        Employee employee = e.getValue(Employee.class);
-                        if (employee.email.equals(email) && employee.pass.equals(password))
-                        {
-                            // it is an employee
-                            userType = "employee";
-                            userid = employee.uid;
-                            break;
-                        }
-                    }
-
-                    DataSnapshot hrleadersSnapshot = dataSnapshot.child("hrleaders");
-                    Iterable<DataSnapshot> hrleaders = hrleadersSnapshot.getChildren();
-
-                    for (DataSnapshot hr : hrleaders)
-                    {
-                        HRLeader leader = hr.getValue(HRLeader.class);
-                        if (leader.email.equals(email) && leader.pass.equals(password))
-                        {
-                            // it is a hr leader
-                            userType = "hrleader";
-                            userid = leader.uid;
-                            break;
-                        }
-                    }
-
+                public void onSuccess(DataProvider.LoginResult result) {
                     showProgress(false);
-                    if (!userType.isEmpty() && !userid.isEmpty())
-                    {
-                        Intent i = new Intent(getApplicationContext(), MainActivity.class);
-                        i.putExtra("userType", userType);
-                        i.putExtra("userID", userid);
+                    Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                    i.putExtra("userType", result.userType);
+                    i.putExtra("userID", result.userId);
 
-                        startActivity(i);
-                        finish();
-                    }
-                    else
-                    {
-                        mPasswordView.setError("problem");
-                    }
+                    startActivity(i);
+                    finish();
                 }
 
                 @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    // Getting Post failed, log a message
-                    Log.w("firebase", "loadPost:onCancelled", databaseError.toException());
-                    // ...
+                public void onError(Exception e) {
+                    showProgress(false);
+                    mPasswordView.setError(getString(R.string.error_incorrect_password));
+                    mPasswordView.requestFocus();
                 }
-            };
-
-            myRef.addListenerForSingleValueEvent(userListener);
+            });
 
 
         }

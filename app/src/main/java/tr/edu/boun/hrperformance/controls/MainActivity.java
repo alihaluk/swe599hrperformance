@@ -2,11 +2,11 @@ package tr.edu.boun.hrperformance.controls;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.support.annotation.NonNull;
-import android.support.design.widget.BottomNavigationView;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -34,28 +34,27 @@ public class MainActivity extends AppCompatActivity
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item)
         {
+            int id = item.getItemId();
 
-            switch(item.getItemId())
-            {
-                case R.id.nav_home:
-                    if (userType.equals("employee"))
-                    {
-                        replaceFragment(EmployeeHomeFragment.newInstance(userId),"Home");
-                    }
-                    else if (userType.equals("hrleader"))
-                    {
-                        replaceFragment(HRLeaderHomeFragment.newInstance(userId),"Home");
-                    }
-                    return true;
-                case R.id.nav_groups:
+            if (id == R.id.nav_home) {
+                if (userType.equals("employee"))
+                {
+                    replaceFragment(EmployeeHomeFragment.newInstance(userId),"Home");
+                }
+                else if (userType.equals("hrleader"))
+                {
+                    replaceFragment(HRLeaderHomeFragment.newInstance(userId),"Home");
+                }
+                return true;
+            } else if (id == R.id.nav_groups) {
 //                    replaceFragment(ExploreFragment.newInstance(),"Explore");
-                    return true;
-                case R.id.nav_employees:
-                    replaceFragment(EmployeeListFragment.newInstance(),"Employees");
-                    return true;
-                case R.id.nav_profile:
-                    replaceFragment(ProfileFragment.newInstance(""),"Profile");
-                    return true;
+                return true;
+            } else if (id == R.id.nav_employees) {
+                replaceFragment(EmployeeListFragment.newInstance(),"Employees");
+                return true;
+            } else if (id == R.id.nav_profile) {
+                replaceFragment(ProfileFragment.newInstance(""),"Profile");
+                return true;
             }
 
             return false;

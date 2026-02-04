@@ -2,19 +2,14 @@ package tr.edu.boun.hrperformance.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,13 +17,23 @@ import java.util.List;
 import tr.edu.boun.hrperformance.R;
 import tr.edu.boun.hrperformance.adapters.EmployeeItemRecyclerViewAdapter;
 import tr.edu.boun.hrperformance.models.Employee;
+import tr.edu.boun.hrperformance.services.DataProvider;
+import tr.edu.boun.hrperformance.services.MockDataProvider;
 
-
+/**
+ * A fragment representing a list of Items.
+ * <p/>
+ * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
+ * interface.
+ */
 public class EmployeeListFragment extends Fragment
 {
 
-    private Context context;
-    private RecyclerView recyclerView;
+    // TODO: Customize parameter argument names
+    private static final String ARG_COLUMN_COUNT = "column-count";
+    // TODO: Customize parameters
+    private int mColumnCount = 1;
+    private OnListFragmentInteractionListener mListener;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -38,13 +43,20 @@ public class EmployeeListFragment extends Fragment
     {
     }
 
-    public static EmployeeListFragment newInstance()
+    // TODO: Customize parameter initialization
+    @SuppressWarnings("unused")
+    public static EmployeeListFragment newInstance(int columnCount)
     {
         EmployeeListFragment fragment = new EmployeeListFragment();
-//        Bundle args = new Bundle();
-//        args.putInt(ARG_COLUMN_COUNT, columnCount);
-//        fragment.setArguments(args);
+        Bundle args = new Bundle();
+        args.putInt(ARG_COLUMN_COUNT, columnCount);
+        fragment.setArguments(args);
         return fragment;
+    }
+
+    public static EmployeeListFragment newInstance()
+    {
+        return newInstance(1);
     }
 
     @Override
@@ -52,6 +64,10 @@ public class EmployeeListFragment extends Fragment
     {
         super.onCreate(savedInstanceState);
 
+        if(getArguments() != null)
+        {
+            mColumnCount = getArguments().getInt(ARG_COLUMN_COUNT);
+        }
     }
 
     @Override
@@ -62,45 +78,66 @@ public class EmployeeListFragment extends Fragment
         // Set the adapter
         if(view instanceof RecyclerView)
         {
-            context = view.getContext();
-            recyclerView = (RecyclerView) view;
+            Context context = view.getContext();
+            final RecyclerView recyclerView = (RecyclerView) view;
+            if(mColumnCount <= 1)
+            {
+                recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            } else
+            {
+                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
+            }
 
-            recyclerView.setLayoutManager(new LinearLayoutManager(context));
+            // Mock Data
+            MockDataProvider.getInstance().getAllEmployees(new DataProvider.DataCallback<List<Employee>>() {
+                @Override
+                public void onSuccess(List<Employee> result) {
+                    recyclerView.setAdapter(new EmployeeItemRecyclerViewAdapter(result));
+                }
 
-            populateEmployees();
+                @Override
+                public void onError(Exception e) {
+
+                }
+            });
         }
         return view;
     }
 
-    public void populateEmployees()
+
+    @Override
+    public void onAttach(Context context)
     {
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("employees");
+        super.onAttach(context);
+//        if(context instanceof OnListFragmentInteractionListener)
+//        {
+//            mListener = (OnListFragmentInteractionListener) context;
+//        } else
+//        {
+//            throw new RuntimeException(context.toString() + " must implement OnListFragmentInteractionListener");
+//        }
+    }
 
-        ValueEventListener employeeListener = new ValueEventListener() {
+    @Override
+    public void onDetach()
+    {
+        super.onDetach();
+        mListener = null;
+    }
 
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot)
-            {
-                Iterable<DataSnapshot> employeeSnapshots = dataSnapshot.getChildren();
-
-                List<Employee> employees = new ArrayList<>();
-                for (DataSnapshot emp : employeeSnapshots)
-                {
-                    Employee e = emp.getValue(Employee.class);
-                    employees.add(e);
-                }
-
-                recyclerView.setAdapter(new EmployeeItemRecyclerViewAdapter(employees));
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError)
-            {
-                Log.w("firebase", "loadPost:onCancelled", databaseError.toException());
-            }
-        };
-
-        myRef.addListenerForSingleValueEvent(employeeListener);
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p/>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnListFragmentInteractionListener
+    {
+        // TODO: Update argument type and name
+        void onListFragmentInteraction(Employee item);
     }
 }
