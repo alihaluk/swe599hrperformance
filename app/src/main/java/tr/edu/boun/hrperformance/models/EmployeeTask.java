@@ -1,8 +1,5 @@
 package tr.edu.boun.hrperformance.models;
 
-import com.google.firebase.database.Exclude;
-import com.google.firebase.database.IgnoreExtraProperties;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,7 +7,6 @@ import java.util.Map;
  * Created by haluks on 17.12.2017.
  */
 
-@IgnoreExtraProperties
 public class EmployeeTask
 {
     public String uid;
@@ -37,7 +33,6 @@ public class EmployeeTask
         this.dueTime = duetime;
     }
 
-    @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
         result.put("uid", uid);

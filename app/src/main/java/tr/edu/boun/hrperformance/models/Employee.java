@@ -13,6 +13,7 @@ public class Employee
     public String name;
     public String email;
     public String pass;
+    public int score = 0;
     public Map<String, Boolean> groups = new HashMap<>();
 
     public Employee()
